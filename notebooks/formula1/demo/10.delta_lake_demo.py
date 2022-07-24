@@ -61,7 +61,36 @@ results_external_demo = spark.read.format("delta").load("/mnt/4mula1dl/demo/resu
 
 # COMMAND ----------
 
+
 display(results_external_demo)
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC select * from f1_demo.results_managed where where position<=10 order by length(position),position
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC UPDATE f1_demo.results_managed
+# MAGIC SET points = 11-position
+# MAGIC where position<=10
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC select * from f1_demo.results_managed where where position<=10 order by length(position),position
+
+# COMMAND ----------
+
+from delta.tables import DeltaTable
+deltaTable = DeltaTable.forPath(spark, "/mnt/4mula1dl/demo/results_managed")
+deltaTable.update("position<=10",{"points" : "20-position"})
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC select * from f1_demo.results_managed where where position<=10 order by length(position),position
 
 # COMMAND ----------
 
