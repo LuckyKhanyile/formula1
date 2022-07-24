@@ -3,11 +3,33 @@
 
 # COMMAND ----------
 
-race_results_df = spark.read.parquet(f"{presentation_folder_path}/race_results")
+# MAGIC %run "../includes/common_functions"
+
+# COMMAND ----------
+
+dbutils.widgets.text("p_file_date","2021-03-21","File Date")
+v_file_date = dbutils.widgets.get("p_file_date")
+
+# COMMAND ----------
+
+race_results_list = spark.read.parquet(f"{presentation_folder_path}/race_results").filter(f"file_date='{v_file_date}'")
+
+# COMMAND ----------
+
+#race_year_list = []
+#for race_year in race_results_list:
+#    race_year_list.append(race_year.race_year)
+#print(race_year_list)
+race_year_list=df_column_to_list(race_results_list,'race_year')
+print(race_year_list)
 
 # COMMAND ----------
 
 from pyspark.sql.functions import sum, when, count, col
+
+# COMMAND ----------
+
+race_results_df = spark.read.parquet(f"{presentation_folder_path}/race_results").filter(col("race_year").isin(race_year_list))
 
 # COMMAND ----------
 
@@ -27,7 +49,8 @@ final_df = constructor_standings_df.withColumn("rank", rank().over(driver_rank_s
 
 # COMMAND ----------
 
-final_df.write.mode("overwrite").format("parquet").saveAsTable("f1_presentation.constructor_standings")
+#final_df.write.mode("overwrite").format("parquet").saveAsTable("f1_presentation.constructor_standings")
+overwrite_partition(final_df,'f1_presentation','constructor_standings','race_year')
 
 # COMMAND ----------
 
@@ -37,3 +60,11 @@ final_df.write.mode("overwrite").format("parquet").saveAsTable("f1_presentation.
 # COMMAND ----------
 
 dbutils.notebook.exit("SUCCESS")
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC DROP TABLE f1_presentation.constructor_standings;
+
+# COMMAND ----------
+
