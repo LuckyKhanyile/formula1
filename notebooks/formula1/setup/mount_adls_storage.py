@@ -47,6 +47,7 @@ def unmount_adls(container_name):
 mount_adls("processed")
 mount_adls("raw")
 mount_adls("presentation")
+mount_adls("demo")
 
 # COMMAND ----------
 
