@@ -241,3 +241,82 @@ display(df)
 
 # COMMAND ----------
 
+# MAGIC %sql
+# MAGIC CREATE TABLE IF NOT EXISTS f1_demo.drivers_txn (
+# MAGIC   driverId INT,
+# MAGIC   dob DATE,
+# MAGIC   forename STRING,
+# MAGIC   surname STRING,
+# MAGIC   createdDate DATE,
+# MAGIC   updatedDate Date
+# MAGIC ) USING DELTA
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC DESC HISTORY f1_demo.drivers_txn;
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC INSERT INTO f1_demo.drivers_txn
+# MAGIC SELECT * from f1_demo.drivers_merge where driverId = 2;
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC DELETE FROM f1_demo.drivers_txn
+# MAGIC WHERE driverId=1;
+
+# COMMAND ----------
+
+for driver_id in range(5,20):
+    spark.sql(f"""INSERT INTO f1_demo.drivers_txn 
+                SELECT * from f1_demo.drivers_merge 
+                WHERE driverId = {driver_id}""")
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC INSERT INTO f1_demo.drivers_txn
+# MAGIC SELECT * from f1_demo.drivers_merge;
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC CREATE TABLE IF NOT EXISTS f1_demo.drivers_convert_to_delta
+# MAGIC (
+# MAGIC   driverId INT,
+# MAGIC   dob DATE,
+# MAGIC   forename STRING,
+# MAGIC   surname STRING,
+# MAGIC   createdDate DATE,
+# MAGIC   updatedDate Date
+# MAGIC ) USING PARQUET
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC INSERT INTO f1_demo.drivers_convert_to_delta
+# MAGIC SELECT * from f1_demo.drivers_merge;
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC CONVERT TO DELTA f1_demo.drivers_convert_to_delta;
+
+# COMMAND ----------
+
+df = spark.table("f1_demo.drivers_convert_to_delta")
+
+# COMMAND ----------
+
+df.write.format("parquet").save("/mnt/4mula1dl/demo/drivers_convert_to_delta_new")
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC CONVERT TO DELTA parquet.`/mnt/4mula1dl/demo/drivers_convert_to_delta_new`;
+
+# COMMAND ----------
+
